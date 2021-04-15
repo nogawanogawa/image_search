@@ -1,4 +1,4 @@
-# streamlit_sample
+# streamlit_image_search_sample
 
 image_search sample project
 
