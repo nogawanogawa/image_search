@@ -1,0 +1,16 @@
+{
+    "mappings": {
+        "properties": {
+            "filename": {
+                "type": "text"
+            },
+            "phash": {
+                "type": "text"
+            },
+            "embedding": {
+                "type": "dense_vector",
+                "dims":512
+            } 
+        }
+    }
+}
