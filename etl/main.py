@@ -12,7 +12,11 @@ import torch
 from torchvision import models
 from torchvision.models import resnet34
 from torch import nn
+import pickle
+from sklearn.cluster import KMeans
 
+
+model_name = '/app/model/kmeans_model.pkl'
 
 class Workflow(FlowSpec):
 
@@ -44,6 +48,28 @@ class Workflow(FlowSpec):
             res = index.create(index_name=index_name)
             assert res["acknowledged"] == True
 
+        self.next(self.build_model)
+
+    @step
+    def build_model(self):
+        """ build kmeans model  """
+        
+        PATH = "/app/images"
+        l = glob.glob(os.path.join(PATH, '*.jpg'))
+
+        features = None
+        for filepath in l:
+            try:
+                if features is None:
+                    features = get_akaze_feature(filepath)
+                else :
+                    features = np.append(features, get_akaze_feature(filepath), axis=0)
+            except:
+                pass
+
+        model = KMeans(n_clusters=20, init='k-means++', random_state=0).fit(features)
+        pickle.dump(model, open(model_name, 'wb'))
+
         self.next(self.extract_load)
 
     @step
@@ -59,8 +85,10 @@ class Workflow(FlowSpec):
         model = models.resnet34(pretrained=True)
         model.fc = nn.Identity()
 
+        kmeans_model = pickle.load(open(model_name, 'rb'))
+
         for i, (data, filepath) in enumerate(dataloader):
-            
+
             with torch.no_grad():
                 output = model(data)
 
@@ -72,9 +100,28 @@ class Workflow(FlowSpec):
             doc["phash"] = str(get_hash(filepath[0]))
             doc["embedding"] = output[0].tolist()
 
-            res = document.register(doc)
-            print(res)
+            d = {
+                0:0, 1:0, 2:0, 3:0, 4:0, 
+                5:0, 6:0, 7:0, 8:0, 9:0, 
+                10:0, 11:0, 12:0, 13:0, 14:0, 
+                15:0, 16:0, 17:0, 18:0, 19:0    
+                }
 
+            try:
+                features = get_akaze_feature(filepath[0])
+                features = kmeans_model.predict(features)
+
+                for f in features:
+                    d[f] = d[f] + 1
+
+            except:
+                pass
+            
+            doc.update(d)
+
+            res = document.register(doc)
+            #print(res)
+            #print(filepath)
 
         self.next(self.end)
 
