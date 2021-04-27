@@ -2,7 +2,7 @@ version: "3"
 services: 
   elasticsearch:
     container_name: elasticsearch
-    build: env/elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
     environment: 
       - discovery.type=single-node
       - cluster.name=docker-cluster
@@ -36,6 +36,7 @@ services:
       - ./etl:/app/src
       - ./lib:/app/src/lib
       - ./data/images:/app/images
+      - ./model/images:/app/model
     
   web:
     container_name: web
@@ -46,6 +47,7 @@ services:
       - ./web:/app/src
       - ./lib:/app/src/lib
       - ./data/images:/app/images
+      - ./model/images:/app/model
     ports: 
       - 8501:8501
     command: streamlit run main.py 
@@ -59,6 +61,7 @@ services:
       - ./jupyter:/app/src
       - ./lib:/app/src/notebook/lib
       - ./data/images:/app/images
+      - ./model/images:/app/model
 
     ports: 
       - 8888:8888
