@@ -70,10 +70,10 @@ if uploaded_file is not None:
 
     kmeans_model = pickle.load(open(model_name, 'rb'))
 
-    with open(uploaded_file.name,"wb") as f:
+    with open("tmp.jpg","wb") as f:
       f.write(uploaded_file.getbuffer())
       
-    features = get_akaze_feature(uploaded_file.name)
+    features = get_akaze_feature("tmp.jpg")
     features = kmeans_model.predict(features)
 
     d = {
